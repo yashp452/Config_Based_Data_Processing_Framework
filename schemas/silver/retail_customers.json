@@ -1,0 +1,13 @@
+[
+  { "column_name": "customer_id",   "datatype": "string",  "nullable": false },
+  { "column_name": "first_name",    "datatype": "string",  "nullable": true  },
+  { "column_name": "last_name",     "datatype": "string",  "nullable": true  },
+  { "column_name": "segment",       "datatype": "string",  "nullable": true  },
+  { "column_name": "region",        "datatype": "string",  "nullable": true  },
+  { "column_name": "city",          "datatype": "string",  "nullable": true  },
+  { "column_name": "state",         "datatype": "string",  "nullable": true  },
+  { "column_name": "country",       "datatype": "string",  "nullable": true  },
+  { "column_name": "zip_code",      "datatype": "string",  "nullable": true  },
+  { "column_name": "created_at",    "datatype": "date",    "nullable": true  },
+  { "column_name": "ingestion_date","datatype": "date",    "nullable": true  }
+]

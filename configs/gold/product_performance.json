@@ -1,0 +1,23 @@
+{
+  "dataset": "gold_product_performance",
+  "layer": "gold",
+  "source": {
+    "format": "delta",
+    "path": "s3a://retail/silver/retail_order_items_enriched/",
+    "options": {}
+  },
+  "aggregation": {
+    "group_by": ["product_id"],
+    "metrics": [
+      { "name": "total_quantity", "expr": "sum(quantity)" },
+      { "name": "total_revenue",  "expr": "sum(line_total)" },
+      { "name": "order_count",    "expr": "count(distinct order_id)" }
+    ]
+  },
+  "sink": {
+    "format": "postgres",
+    "schema": "gold_schema",
+    "table": "gold_product_performance",
+    "mode": "overwrite"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "dataset": "retail_order_items",
+  "bronze": {
+    "source_format": "parquet",
+    "source_path": "/data/retail/facts/{year}/{month}/{day}/order_line_items.parquet",
+    "target_path": "s3a://retail/bronze/retail_order_line_items/"
+  },
+  "silver": {
+    "source_path": "s3a://retail/bronze/retail_order_line_items/",
+    "target_path": "s3a://retail/silver/retail_order_items_enriched/",
+    "schema_path": "/app/schemas/silver/retail_order_items_enriched.json",
+    "primary_key": "line_item_id",
+    "not_null_columns": ["line_item_id", "order_id", "product_id"],
+    "dedup_key": ["line_item_id"],
+    "on_null_violation": "warn",
+    "joins": [
+      {
+        "format": "delta",
+        "path": "s3a://retail/bronze/retail_orders/",
+        "on": "order_id",
+        "type": "left",
+        "select": ["order_id", "order_date", "store_id", "customer_id", "status", "channel"]
+      },
+      {
+        "format": "delta",
+        "path": "s3a://retail/silver/retail_products/",
+        "on": "product_id",
+        "type": "left",
+        "select": ["product_id", "product_name", "category"]
+      }
+    ]
+  }
+}

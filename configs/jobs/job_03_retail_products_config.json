@@ -1,0 +1,23 @@
+{
+  "dataset": "retail_products",
+  "bronze": {
+    "source_format": "parquet",
+    "source_path": "/data/retail/dims/products.parquet",
+    "target_path": "s3a://retail/bronze/retail_products/"
+  },
+  "silver": {
+    "source_path": "s3a://retail/bronze/retail_products/",
+    "target_path": "s3a://retail/silver/retail_products/",
+    "schema_path": "/app/schemas/silver/retail_products.json",
+    "primary_key": "product_id",
+    "not_null_columns": ["product_id"],
+    "dedup_key": ["product_id"],
+    "on_null_violation": "warn",
+    "transformations": [
+      {
+        "name": "standardize_strings",
+        "params": { "columns": ["category"], "lowercase": false }
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "dataset": "retail_customers",
+  "bronze": {
+    "source_format": "parquet",
+    "source_path": "/data/retail/dims/customers.parquet",
+    "target_path": "s3a://retail/bronze/retail_customers/"
+  },
+  "silver": {
+    "source_path": "s3a://retail/bronze/retail_customers/",
+    "target_path": "s3a://retail/silver/retail_customers/",
+    "schema_path": "/app/schemas/silver/retail_customers.json",
+    "primary_key": "customer_id",
+    "not_null_columns": ["customer_id"],
+    "dedup_key": ["customer_id"],
+    "on_null_violation": "warn",
+    "transformations": [
+      {
+        "name": "standardize_strings",
+        "params": { "columns": ["segment", "region", "country"], "lowercase": false }
+      },
+      {
+        "name": "cast_types",
+        "params": { "columns": { "zip_code": "string" } }
+      }
+    ]
+  }
+}

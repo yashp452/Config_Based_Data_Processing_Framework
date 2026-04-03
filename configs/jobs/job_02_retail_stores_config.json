@@ -1,0 +1,27 @@
+{
+  "dataset": "retail_stores",
+  "bronze": {
+    "source_format": "parquet",
+    "source_path": "/data/retail/dims/stores.parquet",
+    "target_path": "s3a://retail/bronze/retail_stores/"
+  },
+  "silver": {
+    "source_path": "s3a://retail/bronze/retail_stores/",
+    "target_path": "s3a://retail/silver/retail_stores/",
+    "schema_path": "/app/schemas/silver/retail_stores.json",
+    "primary_key": "store_id",
+    "not_null_columns": ["store_id"],
+    "dedup_key": ["store_id"],
+    "on_null_violation": "warn",
+    "transformations": [
+      {
+        "name": "standardize_strings",
+        "params": { "columns": ["store_type", "country"], "lowercase": false }
+      },
+      {
+        "name": "cast_types",
+        "params": { "columns": { "zip_code": "string" } }
+      }
+    ]
+  }
+}

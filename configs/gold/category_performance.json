@@ -1,0 +1,25 @@
+{
+  "dataset": "gold_category_performance",
+  "layer": "gold",
+  "source": {
+    "format": "delta",
+    "path": "s3a://retail/silver/retail_order_items_enriched/",
+    "options": {}
+  },
+  "aggregation": {
+    "group_by": ["category", "channel", "status"],
+    "metrics": [
+      { "name": "total_revenue",    "expr": "sum(line_total)" },
+      { "name": "total_quantity",   "expr": "sum(quantity)" },
+      { "name": "order_count",      "expr": "count(distinct order_id)" },
+      { "name": "avg_discount",     "expr": "avg(discount)" },
+      { "name": "avg_unit_price",   "expr": "avg(unit_price)" }
+    ]
+  },
+  "sink": {
+    "format": "postgres",
+    "schema": "gold_schema",
+    "table": "gold_category_performance",
+    "mode": "overwrite"
+  }
+}

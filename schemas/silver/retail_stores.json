@@ -1,0 +1,10 @@
+[
+  { "column_name": "store_id",      "datatype": "string",  "nullable": false },
+  { "column_name": "store_name",    "datatype": "string",  "nullable": true  },
+  { "column_name": "city",          "datatype": "string",  "nullable": true  },
+  { "column_name": "state",         "datatype": "string",  "nullable": true  },
+  { "column_name": "country",       "datatype": "string",  "nullable": true  },
+  { "column_name": "zip_code",      "datatype": "string",  "nullable": true  },
+  { "column_name": "store_type",    "datatype": "string",  "nullable": true  },
+  { "column_name": "ingestion_date","datatype": "date",    "nullable": true  }
+]

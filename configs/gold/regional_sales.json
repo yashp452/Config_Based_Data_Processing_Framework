@@ -1,0 +1,24 @@
+{
+  "dataset": "gold_regional_sales",
+  "layer": "gold",
+  "source": {
+    "format": "delta",
+    "path": "s3a://retail/silver/retail_orders_enriched/",
+    "options": {}
+  },
+  "aggregation": {
+    "group_by": ["region", "segment", "channel"],
+    "metrics": [
+      { "name": "total_revenue",    "expr": "sum(total_amount)" },
+      { "name": "order_count",      "expr": "count(order_id)" },
+      { "name": "avg_order_value",  "expr": "avg(total_amount)" },
+      { "name": "unique_customers", "expr": "count(distinct customer_id)" }
+    ]
+  },
+  "sink": {
+    "format": "postgres",
+    "schema": "gold_schema",
+    "table": "gold_regional_sales",
+    "mode": "overwrite"
+  }
+}
