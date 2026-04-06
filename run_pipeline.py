@@ -60,17 +60,23 @@ def _to_bronze_config(job: dict, run_date: date) -> dict:
     }
 
 
-def _to_silver_config(job: dict) -> dict:
+def _to_silver_config(job: dict, incremental_from: str | None = None) -> dict:
     sv = job["silver"]
     # DQ transformations come first, then any dataset-specific ones
     transformations = [
         {"name": "filter_nulls",    "params": {"columns": sv["not_null_columns"]}},
         {"name": "drop_duplicates", "params": {"subset": sv["dedup_key"]}},
     ] + sv.get("transformations", [])
+
+    # Pass incremental filter as a source option — pipeline applies it after read
+    source_options = {}
+    if incremental_from:
+        source_options["incremental_from"] = incremental_from
+
     return {
         "dataset": f"silver_{job['dataset']}",
         "layer": "silver",
-        "source": {"format": "delta", "path": sv["source_path"], "options": {}},
+        "source": {"format": "delta", "path": sv["source_path"], "options": source_options},
         "joins": sv.get("joins", []),
         "transformations": transformations,
         "schema_path": sv.get("schema_path"),
@@ -84,7 +90,7 @@ def _to_silver_config(job: dict) -> dict:
     }
 
 
-def _load_pipeline_configs(layer: str, run_date: date, dataset: str | None = None) -> list[dict]:
+def _load_pipeline_configs(layer: str, run_date: date, watermark=None, dataset: str | None = None) -> list[dict]:
     if layer == "gold":
         configs = [_load_json(p) for p in sorted(glob.glob(GOLD_GLOB))]
         if dataset:
@@ -100,14 +106,29 @@ def _load_pipeline_configs(layer: str, run_date: date, dataset: str | None = Non
     if layer == "bronze":
         return [_to_bronze_config(j, run_date) for j in jobs]
     else:  # silver
-        return [_to_silver_config(j) for j in jobs]
+        configs = []
+        for j in jobs:
+            incremental_from = None
+            if watermark:
+                silver_dataset = f"silver_{j['dataset']}"
+                wm = watermark.get(silver_dataset)
+                if wm and wm.get("status") == "success":
+                    incremental_from = str(wm["last_processed_date"])
+                    logger.info(
+                        "[SILVER] %s — incremental read from ingestion_date > %s",
+                        silver_dataset, incremental_from,
+                    )
+            configs.append(_to_silver_config(j, incremental_from))
+        return configs
 
 
 # ── Runner ────────────────────────────────────────────────────────────────────
 
 def run_layer(container, watermark, layer: str, full_refresh: bool, run_date: date, dataset: str | None = None) -> list[str]:
     """Run all datasets for one layer. Returns names of failed datasets."""
-    configs = _load_pipeline_configs(layer, run_date, dataset)
+    # Pass watermark to silver so each dataset only reads new bronze partitions
+    wm_for_silver = None if full_refresh else watermark
+    configs = _load_pipeline_configs(layer, run_date, wm_for_silver, dataset)
     if not configs:
         logger.warning("No configs found for layer '%s'", layer)
         return []

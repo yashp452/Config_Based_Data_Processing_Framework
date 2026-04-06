@@ -1,5 +1,4 @@
 from pyspark.sql import SparkSession
-
 from .base import BaseReader
 from .csv_reader import CsvReader
 from .delta_reader import DeltaReader

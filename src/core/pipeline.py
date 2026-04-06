@@ -35,7 +35,13 @@ class Pipeline:
         source = self.config["source"]
         reader = ReaderFactory.get(source["format"], self.spark)
         logger.info("Reading from %s (format=%s)", source["path"], source["format"])
-        return reader.read(source["path"], source.get("options", {}))
+        df = reader.read(source["path"], source.get("options", {}))
+        incremental_from = source.get("options", {}).get("incremental_from")
+        if incremental_from:
+            from pyspark.sql.functions import col, to_date, lit
+            logger.info("Applying incremental filter: ingestion_date > %s", incremental_from)
+            df = df.filter(col("ingestion_date") > to_date(lit(incremental_from)))
+        return df
 
     def _join(self, df: DataFrame) -> DataFrame:
         for j in self.config.get("joins", []):

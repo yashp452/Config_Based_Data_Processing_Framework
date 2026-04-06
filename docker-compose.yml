@@ -19,6 +19,8 @@ x-airflow-common: &airflow-common
     - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=false
     - AIRFLOW__CORE__LOAD_EXAMPLES=false
     - AIRFLOW__WEBSERVER__SECRET_KEY=retail_demo_secret
+    - AIRFLOW__SCHEDULER__SCHEDULER_ZOMBIE_TASK_THRESHOLD=7200
+    - AIRFLOW__SCHEDULER__ZOMBIE_DETECTION_INTERVAL=60
     - PIPELINE_IMAGE=config_based_data_processing-spark-pipeline
     - DOCKER_NETWORK=config_based_data_processing_default
     - PROJECT_DIR=${PROJECT_DIR}
